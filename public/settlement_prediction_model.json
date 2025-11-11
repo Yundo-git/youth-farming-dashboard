@@ -1,0 +1,19 @@
+{
+  "feature_importance": {
+    "support_program_participants": 0.272,
+    "young_farmers_2023": 0.205,
+    "policy_satisfaction": 0.189,
+    "average_income": 0.152,
+    "land_availability_score": 0.089,
+    "agricultural_technology_score": 0.051,
+    "community_support_score": 0.042
+  },
+  "model_performance": {
+    "r2_score": 0.965,
+    "mae": 0.34,
+    "rmse": 0.52
+  },
+  "model_type": "Random Forest Regressor",
+  "training_samples": 68,
+  "features_count": 7
+}
