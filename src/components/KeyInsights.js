@@ -125,16 +125,16 @@ function KeyInsights({ regionData, modelData }) {
   );
 }
 
-function getFactorDisplayName(factor) {
-  const displayNames = {
-    'support_program_participants': '지원 프로그램 참여자 수',
-    'young_farmers_2023': '기존 청년농업인 수',
-    'policy_satisfaction': '정책 만족도',
-'land_availability_score': '토지 가용성',
-    'agricultural_technology_score': '농업 기술 수준',
-    'community_support_score': '커뮤니티 지원'
-  };
-  return displayNames[factor] || factor;
-}
+// function getFactorDisplayName(factor) {
+//   const displayNames = {
+//     'support_program_participants': '지원 프로그램 참여자 수',
+//     'young_farmers_2023': '기존 청년농업인 수',
+//     'policy_satisfaction': '정책 만족도',
+// 'land_availability_score': '토지 가용성',
+//     'agricultural_technology_score': '농업 기술 수준',
+//     'community_support_score': '커뮤니티 지원'
+//   };
+//   return displayNames[factor] || factor;
+// }
 
 export default KeyInsights;

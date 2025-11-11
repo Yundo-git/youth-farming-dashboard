@@ -110,8 +110,73 @@ function Dashboard() {
   const [modelData, setModelData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  
+  // 두 지점 간 거리 계산 (Haversine formula) 함수는 useEffect 외부에 유지
+  const calculateDistance = (lat1, lon1, lat2, lon2) => {
+    const R = 6371; // 지구 반지름 (km)
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = 
+      Math.sin(dLat/2) * Math.sin(dLat/2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+      Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
+  };
 
   useEffect(() => {
+    // 지역 데이터 강화 함수를 useEffect 내부로 이동
+    const enrichRegionData = (regions) => {
+      return regions.map(region => {
+        // 대도시 근접성 계산 (서울, 부산, 대구, 인천, 광주, 대전 기준)
+        const majorCities = {
+          '서울': { lat: 37.5665, lng: 126.9780 },
+          '부산': { lat: 35.1796, lng: 129.0756 },
+          '대구': { lat: 35.8714, lng: 128.6014 },
+          '인천': { lat: 37.4563, lng: 126.7052 },
+          '광주': { lat: 35.1595, lng: 126.8526 },
+          '대전': { lat: 36.3504, lng: 127.3845 }
+        };
+
+        let minDistance = Infinity;
+        let nearestCity = '';
+
+        Object.entries(majorCities).forEach(([city, coords]) => {
+          const distance = calculateDistance(
+            region.latitude, 
+            region.longitude, 
+            coords.lat, 
+            coords.lng
+          );
+          if (distance < minDistance) {
+            minDistance = distance;
+            nearestCity = city;
+          }
+        });
+
+        // 근접성 등급 (A: 30km 이내, B: 30-60km, C: 60-100km, D: 100km 이상)
+        let proximityGrade = 'D';
+        if (minDistance < 30) proximityGrade = 'A';
+        else if (minDistance < 60) proximityGrade = 'B';
+        else if (minDistance < 100) proximityGrade = 'C';
+
+        // 종합 인프라 점수 계산
+        const infrastructureScore = (
+          (region.land_availability_score || 0) * 0.3 +
+          (region.agricultural_technology_score || 0) * 0.35 +
+          (region.community_support_score || 0) * 0.35
+        );
+
+        return {
+          ...region,
+          infrastructure_score: infrastructureScore,
+          proximity_to_city: minDistance,
+          proximity_grade: proximityGrade,
+          nearest_major_city: nearestCity
+        };
+      });
+    };
+    
     const loadData = async () => {
       try {
         // 지역 데이터 로드
@@ -125,7 +190,7 @@ function Dashboard() {
         const model = await modelResponse.json();
         
         // 지역별 인프라 점수 및 대도시 근접성 계산
-        const enrichedRegions = enrichRegionData(regions);
+        const enrichedRegions = enrichRegionData(regions); // 이제 내부 함수 호출
         
         setRegionData(enrichedRegions);
         setModelData(model);
@@ -138,72 +203,9 @@ function Dashboard() {
     };
 
     loadData();
-  }, []);
+  }, [ /* 의존성 배열은 비워두어 컴포넌트 마운트 시 한 번만 실행되도록 유지 */ ]);
 
-  // 지역 데이터 강화 함수
-  const enrichRegionData = (regions) => {
-    return regions.map(region => {
-      // 대도시 근접성 계산 (서울, 부산, 대구, 인천, 광주, 대전 기준)
-      const majorCities = {
-        '서울': { lat: 37.5665, lng: 126.9780 },
-        '부산': { lat: 35.1796, lng: 129.0756 },
-        '대구': { lat: 35.8714, lng: 128.6014 },
-        '인천': { lat: 37.4563, lng: 126.7052 },
-        '광주': { lat: 35.1595, lng: 126.8526 },
-        '대전': { lat: 36.3504, lng: 127.3845 }
-      };
-
-      let minDistance = Infinity;
-      let nearestCity = '';
-
-      Object.entries(majorCities).forEach(([city, coords]) => {
-        const distance = calculateDistance(
-          region.latitude, 
-          region.longitude, 
-          coords.lat, 
-          coords.lng
-        );
-        if (distance < minDistance) {
-          minDistance = distance;
-          nearestCity = city;
-        }
-      });
-
-      // 근접성 등급 (A: 30km 이내, B: 30-60km, C: 60-100km, D: 100km 이상)
-      let proximityGrade = 'D';
-      if (minDistance < 30) proximityGrade = 'A';
-      else if (minDistance < 60) proximityGrade = 'B';
-      else if (minDistance < 100) proximityGrade = 'C';
-
-      // 종합 인프라 점수 계산
-      const infrastructureScore = (
-        (region.land_availability_score || 0) * 0.3 +
-        (region.agricultural_technology_score || 0) * 0.35 +
-        (region.community_support_score || 0) * 0.35
-      );
-
-      return {
-        ...region,
-        infrastructure_score: infrastructureScore,
-        proximity_to_city: minDistance,
-        proximity_grade: proximityGrade,
-        nearest_major_city: nearestCity
-      };
-    });
-  };
-
-  // 두 지점 간 거리 계산 (Haversine formula)
-  const calculateDistance = (lat1, lon1, lat2, lon2) => {
-    const R = 6371; // 지구 반지름 (km)
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLon = (lon2 - lon1) * Math.PI / 180;
-    const a = 
-      Math.sin(dLat/2) * Math.sin(dLat/2) +
-      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-      Math.sin(dLon/2) * Math.sin(dLon/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    return R * c;
-  };
+  // ❌ 기존에 useEffect 외부에 있던 enrichRegionData 함수는 삭제됨
 
   if (loading) {
     return (

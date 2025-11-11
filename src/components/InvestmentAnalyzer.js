@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react'; // 👈 useCallback import 추가
 import styled from 'styled-components';
 import { Bar } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title as ChartTitle, Tooltip, Legend } from 'chart.js';
@@ -216,13 +216,8 @@ function InvestmentAnalyzer({ regionData, modelData }) {
   const [selectedRegion, setSelectedRegion] = useState('');
   const [analysis, setAnalysis] = useState(null);
 
-  useEffect(() => {
-    if (selectedRegion && regionData && modelData) {
-      performAnalysis();
-    }
-  }, [selectedRegion, regionData, modelData]);
-
-  const performAnalysis = () => {
+  // 1. performAnalysis 함수를 useCallback으로 감싸서 의존성 목록에 넣을 수 있도록 준비
+  const performAnalysis = useCallback(() => {
     const region = regionData.find(r => 
       `${r.region_name_sido}-${r.region_name_sigungu}` === selectedRegion
     );
@@ -294,7 +289,14 @@ function InvestmentAnalyzer({ regionData, modelData }) {
       recommendations,
       nationalAvg
     });
-  };
+  }, [selectedRegion, regionData, modelData]); // 👈 함수가 사용하는 모든 값(props, state)을 의존성으로 추가
+
+  // 2. useEffect의 의존성 배열에 performAnalysis를 추가
+  useEffect(() => {
+    if (selectedRegion && regionData && modelData) {
+      performAnalysis();
+    }
+  }, [selectedRegion, regionData, modelData, performAnalysis]); // 👈 performAnalysis 추가
 
   const getBarChartData = () => {
     if (!analysis) return null;

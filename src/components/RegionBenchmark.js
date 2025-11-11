@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react'; // 👈 useCallback import 추가
 import styled from 'styled-components';
 
 const Container = styled.div`
@@ -236,13 +236,64 @@ function RegionBenchmark({ regionData }) {
   const [selectedRegion, setSelectedRegion] = useState('');
   const [benchmarkResults, setBenchmarkResults] = useState([]);
 
-  useEffect(() => {
-    if (selectedRegion && regionData) {
-      findSimilarRegions();
-    }
-  }, [selectedRegion, regionData]);
+  // 유사도 계산 함수들은 props/state에 의존하지 않으므로 그대로 유지
+  const calculateProximityMatch = (grade1, grade2) => {
+    const grades = ['A', 'B', 'C', 'D'];
+    const diff = Math.abs(grades.indexOf(grade1) - grades.indexOf(grade2));
+    
+    if (diff === 0) return 1.0;
+    if (diff === 1) return 0.7;
+    if (diff === 2) return 0.4;
+    return 0.2;
+  };
 
-  const findSimilarRegions = () => {
+  const calculateInfrastructureMatch = (score1, score2) => {
+    const diff = Math.abs(score1 - score2);
+    const maxDiff = 10; // 최대 점수 차이
+    
+    return Math.max(0, 1 - (diff / maxDiff));
+  };
+
+  const calculateScaleMatch = (count1, count2) => {
+    if (count1 === 0 || count2 === 0) return 0.5;
+    
+    const ratio = Math.min(count1, count2) / Math.max(count1, count2);
+    return ratio;
+  };
+
+  const analyzeSuccessFactors = (target, benchmark) => {
+    const factors = [];
+
+    // 지원 프로그램
+    if ((benchmark.support_program_participants || 0) > (target.support_program_participants || 0) * 1.2) {
+      factors.push(`지원 프로그램 참여자 수가 ${Math.round((benchmark.support_program_participants || 0) - (target.support_program_participants || 0))}명 더 많음`);
+    }
+
+    // 정책 만족도
+    if ((benchmark.policy_satisfaction || 0) > (target.policy_satisfaction || 0) + 0.5) {
+      factors.push(`정책 만족도가 ${((benchmark.policy_satisfaction || 0) - (target.policy_satisfaction || 0)).toFixed(1)}점 더 높음`);
+    }
+
+    // 평균 소득
+    if ((benchmark.average_income || 0) > (target.average_income || 0) * 1.1) {
+      factors.push(`평균 소득이 ${Math.round((benchmark.average_income || 0) - (target.average_income || 0))}만원 더 높음`);
+    }
+
+    // 농업 기술
+    if ((benchmark.agricultural_technology_score || 0) > (target.agricultural_technology_score || 0) + 1) {
+      factors.push(`농업 기술 수준이 ${((benchmark.agricultural_technology_score || 0) - (target.agricultural_technology_score || 0)).toFixed(1)}점 더 높음`);
+    }
+
+    // 커뮤니티 지원
+    if ((benchmark.community_support_score || 0) > (target.community_support_score || 0) + 1) {
+      factors.push(`커뮤니티 지원 점수가 ${((benchmark.community_support_score || 0) - (target.community_support_score || 0)).toFixed(1)}점 더 높음`);
+    }
+
+    return factors.length > 0 ? factors : ['전반적으로 균형잡힌 발전을 이룸'];
+  };
+
+  // findSimilarRegions 함수를 useCallback으로 래핑
+  const findSimilarRegions = useCallback(() => {
     const targetRegion = regionData.find(r => 
       `${r.region_name_sido}-${r.region_name_sigungu}` === selectedRegion
     );
@@ -307,62 +358,14 @@ function RegionBenchmark({ regionData }) {
     }));
 
     setBenchmarkResults(enrichedResults);
-  };
+  }, [selectedRegion, regionData]); // 👈 의존성 배열에 selectedRegion과 regionData 추가
 
-  const calculateProximityMatch = (grade1, grade2) => {
-    const grades = ['A', 'B', 'C', 'D'];
-    const diff = Math.abs(grades.indexOf(grade1) - grades.indexOf(grade2));
-    
-    if (diff === 0) return 1.0;
-    if (diff === 1) return 0.7;
-    if (diff === 2) return 0.4;
-    return 0.2;
-  };
-
-  const calculateInfrastructureMatch = (score1, score2) => {
-    const diff = Math.abs(score1 - score2);
-    const maxDiff = 10; // 최대 점수 차이
-    
-    return Math.max(0, 1 - (diff / maxDiff));
-  };
-
-  const calculateScaleMatch = (count1, count2) => {
-    if (count1 === 0 || count2 === 0) return 0.5;
-    
-    const ratio = Math.min(count1, count2) / Math.max(count1, count2);
-    return ratio;
-  };
-
-  const analyzeSuccessFactors = (target, benchmark) => {
-    const factors = [];
-
-    // 지원 프로그램
-    if ((benchmark.support_program_participants || 0) > (target.support_program_participants || 0) * 1.2) {
-      factors.push(`지원 프로그램 참여자 수가 ${Math.round((benchmark.support_program_participants || 0) - (target.support_program_participants || 0))}명 더 많음`);
+  // useEffect에 findSimilarRegions를 의존성으로 추가
+  useEffect(() => {
+    if (selectedRegion && regionData) {
+      findSimilarRegions(); // 👈 useCallback으로 감싼 함수 호출
     }
-
-    // 정책 만족도
-    if ((benchmark.policy_satisfaction || 0) > (target.policy_satisfaction || 0) + 0.5) {
-      factors.push(`정책 만족도가 ${((benchmark.policy_satisfaction || 0) - (target.policy_satisfaction || 0)).toFixed(1)}점 더 높음`);
-    }
-
-    // 평균 소득
-    if ((benchmark.average_income || 0) > (target.average_income || 0) * 1.1) {
-      factors.push(`평균 소득이 ${Math.round((benchmark.average_income || 0) - (target.average_income || 0))}만원 더 높음`);
-    }
-
-    // 농업 기술
-    if ((benchmark.agricultural_technology_score || 0) > (target.agricultural_technology_score || 0) + 1) {
-      factors.push(`농업 기술 수준이 ${((benchmark.agricultural_technology_score || 0) - (target.agricultural_technology_score || 0)).toFixed(1)}점 더 높음`);
-    }
-
-    // 커뮤니티 지원
-    if ((benchmark.community_support_score || 0) > (target.community_support_score || 0) + 1) {
-      factors.push(`커뮤니티 지원 점수가 ${((benchmark.community_support_score || 0) - (target.community_support_score || 0)).toFixed(1)}점 더 높음`);
-    }
-
-    return factors.length > 0 ? factors : ['전반적으로 균형잡힌 발전을 이룸'];
-  };
+  }, [selectedRegion, regionData, findSimilarRegions]); // 👈 findSimilarRegions 추가
 
   const targetRegion = regionData?.find(r => 
     `${r.region_name_sido}-${r.region_name_sigungu}` === selectedRegion
