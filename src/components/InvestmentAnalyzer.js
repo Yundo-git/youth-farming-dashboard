@@ -361,23 +361,51 @@ function InvestmentAnalyzer({ regionData, modelData }) {
 
       <RegionSelector>
         <Label>지역 선택</Label>
-        <Select
-          value={selectedRegion}
-          onChange={(e) => setSelectedRegion(e.target.value)}
-          $hasValue={!!selectedRegion}
-        >
-          <option value="">-- 지역을 선택하세요 --</option>
-          {regionData && regionData
-            .sort((a, b) => (b.settlement_rate || 0) - (a.settlement_rate || 0))
-            .map((region, index) => (
-              <option 
-                key={index}
-                value={`${region.region_name_sido}-${region.region_name_sigungu}`}
-              >
-                {region.region_name_sido} {region.region_name_sigungu} (정착률: {region.settlement_rate?.toFixed(1)}%)
-              </option>
-            ))}
-        </Select>
+        <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
+          <Select
+            value={selectedRegion.split('-')[0] || ''}
+            onChange={(e) => {
+              const sido = e.target.value;
+              if (sido) {
+                setSelectedRegion(sido + (selectedRegion.includes('-') ? selectedRegion.substring(selectedRegion.indexOf('-')) : ''));
+              } else {
+                setSelectedRegion('');
+              }
+            }}
+            $hasValue={!!selectedRegion}
+            style={{ flex: 1 }}
+          >
+            <option value="">-- 시/도 선택 --</option>
+            {regionData && [...new Set(regionData.map(region => region.region_name_sido))]
+              .sort((a, b) => a.localeCompare(b))
+              .map((sido, index) => (
+                <option key={`sido-${index}`} value={sido}>
+                  {sido}
+                </option>
+              ))}
+          </Select>
+          
+          <Select
+            value={selectedRegion}
+            onChange={(e) => setSelectedRegion(e.target.value)}
+            $hasValue={!!selectedRegion}
+            disabled={!selectedRegion.includes('-') && !selectedRegion}
+            style={{ flex: 2 }}
+          >
+            <option value="">-- 시/군/구 선택 --</option>
+            {regionData && selectedRegion.split('-')[0] && regionData
+              .filter(region => region.region_name_sido === selectedRegion.split('-')[0])
+              .sort((a, b) => a.region_name_sigungu.localeCompare(b.region_name_sigungu))
+              .map((region, index) => (
+                <option 
+                  key={`sigungu-${index}`}
+                  value={`${region.region_name_sido}-${region.region_name_sigungu}`}
+                >
+                  {region.region_name_sigungu} (정착률: {region.settlement_rate?.toFixed(1)}%)
+                </option>
+              ))}
+          </Select>
+        </div>
       </RegionSelector>
 
       {analysis && (
