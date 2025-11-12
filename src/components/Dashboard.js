@@ -6,78 +6,155 @@ import KeyInsights from './KeyInsights';
 
 const DashboardContainer = styled.div`
   width: 100%;
-  padding: 20px;
+  padding: 16px;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   min-height: 100vh;
   box-sizing: border-box;
+  
+  @media (max-width: 768px) {
+    padding: 12px 8px;
+  }
 `;
 
 const Header = styled.header`
   text-align: center;
-  padding: 40px 20px;
+  padding: 30px 16px;
   color: white;
-  margin: 0 -20px 30px -20px;
+  margin: 0 -16px 24px -16px;
   background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
-  width: calc(100% + 40px);
+  width: calc(100% + 32px);
+  
+  @media (max-width: 768px) {
+    padding: 20px 12px;
+    margin: 0 -12px 20px -12px;
+    width: calc(100% + 24px);
+  }
 `;
 
 const Title = styled.h1`
-  font-size: 48px;
-  margin: 0 0 16px 0;
+  font-size: 32px;
+  margin: 0 0 12px 0;
   font-weight: bold;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+  line-height: 1.3;
+  padding: 0 10px;
+  word-break: keep-all;
+  
+  @media (min-width: 768px) {
+    font-size: 40px;
+  }
+  
+  @media (min-width: 1024px) {
+    font-size: 48px;
+  }
 `;
 
 const Subtitle = styled.p`
-  font-size: 22px;
+  font-size: 16px;
   margin: 8px 0;
   opacity: 0.95;
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
   font-weight: 500;
+  line-height: 1.4;
+  padding: 0 10px;
+  word-break: keep-all;
+  
+  @media (min-width: 768px) {
+    font-size: 20px;
+  }
+  
+  @media (min-width: 1024px) {
+    font-size: 22px;
+  }
 `;
 
 const PurposeBox = styled.div`
   background: white;
-  padding: 32px 40px;
-  margin: 0 0 30px 0;
+  padding: 24px 16px;
+  margin: 0 0 24px 0;
   width: 100%;
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   box-sizing: border-box;
+  
+  @media (min-width: 768px) {
+    padding: 28px 24px;
+    margin: 0 0 30px 0;
+  }
+  
+  @media (min-width: 1024px) {
+    padding: 32px 40px;
+  }
 `;
 
 const PurposeTitle = styled.h3`
   color: #2c3e50;
-  font-size: 24px;
-  margin: 0 auto 20px auto;
+  font-size: 20px;
+  margin: 0 auto 16px auto;
   text-align: center;
   display: block;
   font-weight: 600;
   position: relative;
   width: fit-content;
-  padding: 0 20px;
+  padding: 0 16px;
+  line-height: 1.4;
   
   &::after {
     content: '';
     position: absolute;
-    bottom: -8px;
+    bottom: -6px;
     left: 50%;
     transform: translateX(-50%);
-    width: 60px;
+    width: 50px;
     height: 3px;
     border-radius: 2px;
+    background: #667eea;
+  }
+  
+  @media (min-width: 768px) {
+    font-size: 22px;
+    margin-bottom: 18px;
+  }
+  
+  @media (min-width: 1024px) {
+    font-size: 24px;
+    margin-bottom: 20px;
   }
 `;
 
 const PurposeText = styled.p`
   color: #34495e;
-  font-size: 16px;
+  font-size: 14px;
   line-height: 1.6;
   margin: 0 auto;
-  max-width: 1200px;
-  padding: 0 20px;
+  max-width: 100%;
+  padding: 0 4px;
+  text-align: center;
+  word-break: keep-all;
+  
+  @media (min-width: 480px) {
+    font-size: 15px;
+    padding: 0 8px;
+  }
+  
+  @media (min-width: 768px) {
+    font-size: 16px;
+    padding: 0 12px;
+    text-align: left;
+  }
+  
+  @media (min-width: 1024px) {
+    max-width: 1200px;
+    padding: 0 20px;
+  }
+  
+  strong {
+    display: inline-block;
+    margin: 8px 0;
+    line-height: 1.7;
+  }
 `;
 
 const LoadingMessage = styled.div`
@@ -103,6 +180,10 @@ const ErrorMessage = styled.div`
 
 const SectionContainer = styled.div`
   margin-bottom: 24px;
+  
+  @media (max-width: 768px) {
+    margin-bottom: 20px;
+  }
 `;
 
 function Dashboard() {
@@ -255,17 +336,17 @@ function Dashboard() {
       <SectionContainer>
         <KeyInsights regionData={regionData} modelData={modelData} />
       </SectionContainer>
-
-      <SectionContainer>
-        {/*<PolicySimulator regionData={regionData} modelData={modelData} />*/}
-      </SectionContainer>
-
+      
       <SectionContainer>
         <InvestmentAnalyzer regionData={regionData} modelData={modelData} />
       </SectionContainer>
-
+      
       <SectionContainer>
         <RegionBenchmark regionData={regionData} />
+      </SectionContainer>
+
+      <SectionContainer>
+        {/*<PolicySimulator regionData={regionData} modelData={modelData} />*/}
       </SectionContainer>
     </DashboardContainer>
   );

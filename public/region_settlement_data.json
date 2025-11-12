@@ -69,20 +69,7 @@
     "latitude": 37.7852,
     "longitude": 127.0459
   },
-  {
-    "region_name_sido": "경기도",
-    "region_name_sigungu": "파주시",
-    "settlement_rate": 51.61,
-    "support_program_participants": 65,
-    "young_farmers_2023": 586,
-    "policy_satisfaction": 6.4,
-    "average_income": 4500,
-    "land_availability_score": 8.0,
-    "agricultural_technology_score": 7.7,
-    "community_support_score": 8.6,
-    "latitude": 37.7596,
-    "longitude": 126.78
-  },
+
   {
     "region_name_sido": "경상남도",
     "region_name_sigungu": "거창군",
